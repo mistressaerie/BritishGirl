@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAI Library</title>
+    <style type="text/css">
+        /* Themes */
+        :root {
+            --body-bg: #f5f8fa;
+            --border-color: #efefef;
+            --messagebox-bg: #ffffff;
+            --messagebox-shadow: rgba(0, 0, 0, 0.1);
+            --font-color: #1f1f1f;
+            --rgba-1: rgba(0, 0, 0, 0.05);
+            --rgba-2: rgba(0, 0, 0, 0.1);
+        }
+
+        .dark_mode {
+            --body-bg: #343434;
+            --border-color: #4f4f4f;
+            --messagebox-bg: #474747;
+            --messagebox-shadow: rgba(0, 0, 0, 0);
+            --font-color: #ededed;
+            --rgba-1: rgba(255, 255, 255, 0.06);
+            --rgba-2: rgba(255, 255, 255, 0.2);
+        }
+
+
+
+        * {
+            box-sizing: border-box;
+        }
+
+        button,
+        select,
+        img {
+            user-select: none;
+        }
+
+        ol,
+        ul,
+        li,
+        a,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        p {
+            text-decoration: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .italic {
+            font-style: italic;
+        }
+
+        .bold {
+            font-weight: bold;
+        }
+
+        .bold-italic {
+            font-weight: bold;
+            font-style: italic;
+        }
+
+        html {
+            font-size: 14px;
+        }
+
+        body {
+            padding: 0;
+            margin: 0;
+            background-color: var(--body-bg);
+            color: var(--font-color);
+        }
+
+        .content-cont {
+            display: flex;
+            flex-direction: row;
+        }
+
+
+        /* NAV / Drawer */
+
+        @keyframes slideIn {
+            0% {
+                opacity: 0;
+                left: -200px;
+            }
+
+            100% {
+                opacity: 1;
+                left: 0;
+            }
+        }
+
+        .drawer-cont.active {
+            display: block;
+        }
+
+        .drawer-cont {
+            display: none;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 100;
+        }
+
+        nav {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            max-width: 80%;
+            background-color: var(--body-bg);
+
+            display: flex;
+            flex-direction: column;
+            padding: 10px 0;
+            overflow: hidden;
+            animation: slideIn 0.2s ease-in-out;
+            -webkit-box-shadow: 4px 0px 15px 0px rgba(0, 0, 0, 0.2);
+            -moz-box-shadow: 4px 0px 15px 0px rgba(0, 0, 0, 0.2);
+            box-shadow: 4px 0px 15px 0px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-header {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: 0 10px 0 20px;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+
+        .close_drawer-btn {
+            align-self: flex-end;
+            padding: 10px;
+            transition: background-color 0.1s ease-in-out;
+            cursor: pointer;
+            border-radius: 8px;
+        }
+
+        .close_drawer-btn:hover {
+            background-color: var(--rgba-1);
+        }
+
+        .close_drawer-btn svg {
+            display: flex;
+            width: 30px;
+            height: 30px;
+            color: var(--font-color);
+        }
+
+        /*.nav-new_char-btn {
+            align-self: flex-start;
+            outline: none;
+            border: none;
+            color: #ffffff;
+            border-radius: 6px;
+            padding: 10px 20px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            background-color: #4e9733;
+            transition: background-color 0.1s ease-in-out;
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        }
+
+        .nav-new_char-btn:hover {
+            background-color: #6ba755;
+        }*/
+
+        .history_list-header {
+            font-size: 1.5rem;
+            padding: 10px 20px;
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+            margin-bottom: 10px;
+        }
+
+        .history_list {
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .history_item {
+            transition: background-color 0.1s ease-in-out;
+            padding: 20px 30px 20px 20px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--rgba-2);
+        }
+
+        .history_item:first-child {
+            border-top: 1px solid var(--rgba-2);
+        }
+
+        .history_item:hover {
+            background-color: var(--rgba-1);
+        }
+
+        .history_item p {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .history_item p .chat-date {
+            font-style: italic;
+            font-size: 1.3rem;
+            margin-bottom: 6px;
+        }
+
+        /*nav .char-item {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 10px;
+            transition: background-color 0.1s ease-in-out;
+            padding: 10px 40px 10px 20px;
+            cursor: pointer;
+        }
+
+        nav .char-item:hover {
+            background-color: var(--rgba-1);
+        }
+
+        nav .nav-avatar-wrap {
+            width: 40px;
+            height: 40px;
+        }
+
+        nav .nav-avatar-wrap img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+        }
+
+        nav .char-item span {
+            font-size: 1.3rem;
+            font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+        }*/
+
+        /* MAIN */
+        main {
+            display: flex;
+            flex-direction: column;
+            padding: 0 4%;
+            width: 100%;
+        }
+
+        /* HEADER */
+        header {
+            padding: 6px 6px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .open_drawer-wrap svg {
+            display: flex;
+            width: 46px;
+            height: 46px;
+            color: var(--font-color);
+        }
+
+
+        .theme_switch {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+        }
+
+        .theme_switch span {
+            font-size: 1.1rem;
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        }
+
+        .tswitch_box[type=checkbox] {
+            height: 0;
+            width: 0;
+            visibility: hidden;
+            position: absolute;
+        }
+
+        .tswitch_label {
+            cursor: pointer;
+            text-indent: -9999px;
+            width: 60px;
+            height: 30px;
+            display: block;
+            border-radius: 15px;
+            position: relative;
+            border: 1px solid #323232;
+            background: #f5f8fa;
+        }
+
+        .tswitch_label:after {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50px;
+            transition: 0.2s;
+            background: #323232;
+        }
+
+        .tswitch_box:checked+label {
+            background: #323232;
+            border: 1px solid #f5f8fa;
+        }
+
+        .tswitch_box:checked+label:after {
+            left: calc(100% - 5px);
+            transform: translateX(-100%);
+            background: #f5f8fa;
+        }
+
+        .tswitch_label:active:after {
+            width: 25px;
+        }
+
+        /*.update_current_char-btn {
+            margin-left: auto;
+            outline: none;
+            border: none;
+            color: #ffffff;
+            border-radius: 6px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            align-self: center;
+            cursor: pointer;
+            background-color: #336c97;
+            transition: background-color 0.1s ease-in-out;
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        }
+
+        .update_current_char-btn:hover {
+            background-color: #5f829d;
+        }*/
+
+
+        /* CONVERSATION */
+        .character_name-cont {
+            text-align: center;
+            padding: 20px 10px;
+        }
+
+        .character_name-cont h3 {
+            font-size: 1.3rem;
+            font-weight: 400;
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
+        }
+
+        .chat {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-self: center;
+            padding-bottom: 30px;
+        }
+
+        .chat_message-item {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .chat .avatar-wrap {
+            flex-shrink: 0;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+
+        .chat .avatar-wrap>* {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+        }
+
+        .chat .avatar-wrap .no_avatar-user {
+            background-color: #5157cf;
+        }
+
+        .chat .avatar-wrap .no_avatar-char {
+            background-color: #e20909;
+        }
+
+        .chat .chat_content-wrap {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px var(--messagebox-shadow);
+            background-color: var(--messagebox-bg);
+            overflow: hidden;
+        }
+
+        .chat .chat_content-wrap h5 {
+            font-size: 1rem;
+            font-weight: bold;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .chat .chat_content-wrap .message-wrap {
+            font-size: 1rem;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+
+        @media (min-width: 576px) {}
+
+        @media (min-width: 768px) {
+            html {
+                font-size: 16px;
+            }
+
+            nav {
+                min-width: 40%;
+            }
+
+            header {
+                padding: 14px 20px;
+            }
+
+            .open_drawer-wrap {
+                padding: 4px;
+                cursor: pointer;
+                border-radius: 6px;
+                transition: background-color 0.1s ease-in-out;
+            }
+
+            .open_drawer-wrap:hover {
+                background-color: var(--rgba-1);
+            }
+
+            .chat {
+                width: 80%;
+            }
+
+            .chat .chat_content-wrap {
+                padding: 14px;
+            }
+        }
+
+        @media (min-width: 992px) {
+            .chat {
+                width: 70%;
+            }
+        }
+
+        @media (min-width: 1200px) {}
+
+        @media (min-width: 1400px) {}
+    </style>
+</head>
+
+<body>
+    <template id="message_item_template">
+        <div class="chat_message-item">
+            <div class="avatar-wrap">
+
+            </div>
+            <div class="chat_content-wrap">
+                <h5>
+
+                </h5>
+                <div class="message-wrap">
+                    <p>
+
+                    </p>
+                </div>
+            </div>
+        </div>
+    </template>
+    <div class="content-cont">
+        <div class="drawer-cont">
+            <nav>
+                <div class="nav-header">
+                    <div class="close_drawer-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-x-lg" viewBox="0 0 16 16">
+                            <path
+                                d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="history_list-header">
+                    <span>History</span>
+                </div>
+                <div class="history_list" id="history_list">
+
+                </div>
+            </nav>
+        </div>
+        <main>
+            <header>
+                <div class="open_drawer-wrap">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                        class="bi bi-list" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd"
+                            d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z" />
+                    </svg>
+                </div>
+
+                <div class="theme_switch">
+                    <span>Dark Mode:</span>
+                    <input type="checkbox" class="tswitch_box" id="tswitch_box" />
+                    <label for="tswitch_box" class="tswitch_label">Toggle</label>
+                </div>
+            </header>
+            <div class="character_name-cont">
+                <h3>---</h3>
+            </div>
+            <div class="chat" id="chat">
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Get body for future use
+            const body = document.querySelector('body');
+
+            // Handle theme
+            const themeSwitcher = document.querySelector('.tswitch_box[type=checkbox]');
+            const cachedTheme = localStorage.getItem('cait_readoffline_theme');
+            if (cachedTheme === "dark_mode") {
+                body.classList.add('dark_mode');
+                themeSwitcher.checked = true;
+            }
+            themeSwitcher.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    body.classList.add('dark_mode');
+                    localStorage.setItem('cait_readoffline_theme', 'dark_mode');
+                } else {
+                    body.classList.remove('dark_mode');
+                    localStorage.setItem('cait_readoffline_theme', 'light_mode');
+                }
+            })
+
+            // Open and close drawer
+            const drawerCont = document.querySelector('.drawer-cont');
+            const openDrawerBtn = document.querySelector('.open_drawer-wrap');
+            const openDrawer = () => {
+                drawerCont.classList.add('active');
+            }
+            const closeDrawer = () => {
+                drawerCont.classList.remove('active');
+            }
+            openDrawerBtn.addEventListener('click', () => {
+                openDrawer();
+            });
+            document.querySelector('.close_drawer-btn').addEventListener('click', () => {
+                closeDrawer();
+            });
+            document.querySelector('.drawer-cont').addEventListener('click', (e) => {
+                // Allows closing from clicking on outside
+                if (e.target.closest('nav')) {
+                    return;
+                }
+                closeDrawer();
+            });
+            // ---------
+
+            // This is replaced by the extension when downloading
+            const historyData = JSON.parse(`{"charPic":"data:image/webp;base64,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","userPic":"data:image/webp;base64,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","history":[{"chat":[{"isUser":false,"name":"British Girl","message":"Tulip%20Bell%20had%20recently%20moved%20from%20London%2C%20and%20still%20has%20yet%20to%20adjust%20to%20the%20new%20location.%20From%20getting%20picked%20on%20to%20getting%20actual%20beat%20up%2C%20Tulip%20has%20turned%20untrusting%20and%20aggressive.%0A%0AIt%20was%20now%20time%20to%20switch%20classes%2C%20Tulip%20getting%20through%20the%20crowd%20with%20relative%20ease.%20That%E2%80%99s%20until%20you%E2%80%99re%20blocking%20her%20way%20to%20the%20next%20period.%20%E2%80%9CMove%20it!%E2%80%9D%20She%20yelled%20"},{"isUser":true,"name":"Aerie Wildwood","message":"I%20give%20a%20small%20%22yipe!%22%20and%20jump%20as%20Tulip%20barks%20that%20order%20at%20me%2C%20and%20stare%20at%20her%20for%20a%20moment%20with%20wide%20eyes.%20%20%22Um...%20s-sorry...%22%20I%20stammer%2C%20and%20ease%20out%20of%20the%20way%2C%20hugging%20my%20schoolbooks%20to%20my%20chest%20as%20Tulip%20huffs%20and%20walks%20quickly%20past%20me.%0A%0AI%20look%20over%20at%20Tara%2C%20my%20best%20friend%20(I've%20only%20been%20at%20this%20school%20for%203%20days%2C%20after%20transferring%20here%20from%20New%20York%20City)%2C%20and%20lean%20over%20to%20her%20and%20whisper%2C%20%22Um...%20who%20was%20THAT%2C%20and%20what's%20up%20with%20her%3F%22"},{"isUser":false,"name":"British Girl","message":"%E2%80%9CTulip%3F%20Yeah%20you%E2%80%99re%20gonna%20need%20to%20get%20used%20to%20her.%20She%E2%80%99s%20just%20been%20through%20a%20lot%20of%20crap%20and%20doesn%E2%80%99t%20trust%20anyone%20at%20this%20point.%20Best%20chance%20of%20getting%20on%20her%20good%20side%20is%20bribing%20her%20with%20food.%E2%80%9D%20Tara%20replied%2C%20clearly%20not%20surprised%20at%20Tulip%E2%80%99s%20rude%20behavior."},{"isUser":true,"name":"Aerie Wildwood","message":"%22Oh%2C%20wow%2C%22%20I%20say%2C%20a%20little%20dazedly%2C%20watching%20Tulip's%20rapidly%20retreating%20back%2C%20and%20absorbing%20what%20Tara%20said.%20%20%22That's...%20kind%20of%20sad%2C%20actually...%22%20I%20trail%20off%2C%20lost%20in%20thought%20about%20what%20sort%20of%20suffering%20could%20have%20made%20a%20girl%20like%20that%20so%20jaded.%0A%0A%22Um...%20tell%20you%20what%2C%22%20I%20say%20to%20Tara%20with%20an%20apologetic%20smile%20and%20a%20gentle%20hand%20on%20her%20shoulder%2C%20%22Mind%20if%20I%20catch%20up%20with%20you%20later%3F%20%20I...%20um...%20kinda%20want%20to%20see%20if%20I%20can%20connect%20with%20Tulip%2C%20and%20maybe%20help%20her%20a%20little...%3F%22%20I%20say%20uncertainly%2C%20watching%20down%20the%20crowded%20school%20hall%20as%20Tulip%20turns%20left%20and%20I%20lose%20sight%20of%20her."},{"isUser":false,"name":"British Girl","message":"Tara%20nods%20in%20agreement%2C%20seeing%20the%20determination%20and%20care%20in%20your%20eyes.%20You%20wanted%20to%20help.%0A%0ASoon%2C%20you%20lose%20sight%20of%20her%2C%20and%20decide%20to%20set%20out%20on%20finding%20her%20again.%20And%20soon%20enough%2C%20you%20do%20find%20Tulip.%20She%20was%20sitting%20alone%20behind%20the%20lockers%2C%20and%20seemingly%20lost%20in%20thought."},{"isUser":true,"name":"Aerie Wildwood","message":"I%20gulp%20quietly%2C%20trying%20to%20settle%20my%20nerves%2C%20and%20brace%20myself%20for%20the%20attempt%20to%20reach%20out%20to%20Tulip.%20%20With%20one%20more%20deep%20breath%20to%20try%20to%20calm%20myself%2C%20I%20quietly%20walk%20up%20and%20gently%20offer%2C%20%22Um...%20hi%3F%22"},{"isUser":false,"name":"British Girl","message":"Tulip%20looked%20over%2C%20obviously%20irritated.%20She%20was%20going%20to%20deny%20any%20sort%20of%20friendship%2C%20or%20even%20talking%20to%20you%2C%20but%20the%20sight%20of%20the%20green%20eyed%20beauty%20stopped%20her.%0A%0AShe%20thought%20it%20over%20for%20a%20second%2C%20before%20deciding%20to%20humor%20you%20for%20now.%20%E2%80%9CWhat%20do%20you%20want.%E2%80%9D%20She%20said%2C%20in%20a%20sharp%20tone."},{"isUser":true,"name":"Aerie Wildwood","message":"%22I...%20um...%22%20I%20stammer%2C%20mentally%20scrambling%20for%20what%20to%20say%2C%20%22I...%20kinda%20wanted%20to%20apologize%20for%20spacing%20out%2C%20and%20blocking%20your%20way%2C%20earlier...%22%20I%20say%20quietly%2C%20taking%20a%20few%20moments%20to%20study%20her%20appearance.%20%20*Oh%2C%20my%20goodness%2C%20her%20silvery%20blue%20eyes%20are%20AMAZING...*%20I%20think%20silently%20to%20myself.%20%20*And%20she's%20so%20pretty...%20like%20a%20model%2C%20or%20princess...*%2C%20I%20reflect%2C%20as%20my%20own%20emerald%20green%20eyes%20glisten%20with%20admiration."},{"isUser":false,"name":"British Girl","message":"As%20you%20study%20Tulip%2C%20you%20can%20see%20that%20she%E2%80%99s%20got%20a%20few%20bruises%20and%20scratches%20on%20her%2C%20obviously%20from%20getting%20beat%20up.%20This%20made%20you%20sad%2C%20and%20you%20just%20wanted%20to%20help%20her.%20You%20wanted%20to%20ask%20her%20why%20she%20was%20so%20mean%2C%20and%20if%20she%20needed%20any%20type%20of%20help.%0A%0ABut%20Tulip%20would%20never%20let%20herself%20be%20vulnerable%2C%20so%20you%E2%80%99d%20have%20to%20do%20it%20carefully%20and%20slowly.%20%0A%0A%E2%80%9CWhatever.%20Apology%20accepted.%20But%20I%20don%E2%80%99t%20need%20your%20help.%E2%80%9D%20Tulip%20said%2C%20brushing%20it%20off."},{"isUser":true,"name":"Aerie Wildwood","message":"%22Oh%2C%22%20I%20say%2C%20taken%20aback%2C%20and%20scrambling%20again%20to%20come%20up%20with%20something...%20ANYTHING...%20to%20%22break%20the%20ice%22%20socially%20with%20her.%20%20%22Well...%20okay...%22%0A%0A*Y'know%20what%3F*%20I%20ask%20myself%20silently%2C%20suddenly%20getting%20an%20inspiration%2C%20*I%20can%20be%20a%20little%20more%20bold%2C%20myself!*%20%20With%20a%20slight%20smile%20and%20a%20more%20confident%20bearing%2C%20I%20surprise%20Tulip%20significantly%20(and%20she%20looks%20at%20me%20with%20wide%20and%20wary%20eyes)%20by%20setting%20my%20book%20bag%20down%20on%20the%20floor%2C%20and%20taking%20a%20seat%20on%20the%20floor%20next%20to%20Tulip!%0A%0A%22I%20like%20the%20place%20you%20chose%2C%20here%2C%22%20I%20say%20with%20a%20smile%2C%20trying%20to%20sound%20more%20confident%20than%20I%20feel%2C%20%22Nice%20and%20quiet%2C%20away%20from%20the%20bustle%20and%20noise%20of%20the%20main%20hall!%22%20%20Then%2C%20remembering%20what%20Tara%20said%20about%20Tulip%20being%20fond%20of%20snacks%2C%20I%20reach%20into%20my%20bag%20and%20pull%20out%20a%20plastic%20sealable%20container%2C%20and%20open%20it%20to%20reveal%20an%20assortment%20of%20sweetened%2C%20dried%20fruit--pineapple%2C%20sweet%20dates%2C%20papaya%20spears%2C%20and%20more.%20%20%22Care%20for%20one%3F%22%20I%20ask%20Tulip%20brightly%2C%20offering%20the%20container%20to%20her%2C%20%22Or%20more%20than%20one%3F%22%20I%20grin."},{"isUser":false,"name":"British Girl","message":"Tulip%20stares%20at%20the%20container%2C%20trying%20to%20hide%20the%20hunger%20and%20craving%20she%20had%20for%20something%20sweet.%20It%20was%20getting%20very%20hard%20to%20resist%E2%80%A6%0A%0AShe%20then%20looked%20at%20you%20and%20gave%20a%20side%20eye.%20She%20would%20normally%20turn%20this%20down%20and%20get%20mad%E2%80%A6%0A%0ABut%20something%20about%20you%20was%20different.%20So%20she%20decides%20to%20humor%20you.%0A%0A%E2%80%9CSure.%20But%20one.%E2%80%9D%20She%20replied%20softly%2C%20her%20tone%20of%20voice%20soft%20for%20the%20first%20time%20since%20you%20met%20her."},{"isUser":true,"name":"Aerie Wildwood","message":"Interiorly%2C%20my%20heart%20leaps%20with%20joy%20at%20the%20small%20%22breakthrough%22%20with%20Tulip!%20%20Exteriorly%2C%20I%20give%20her%20a%20small%20grin%20and%20say%2C%20%22Ooh%2C%20sweetened%20dried%20pineapple...%20good%20choice!%20%20But%20I%2C%20for%20one%2C%20can%20never%20stop%20at%20just%20one%20piece...%22%20I%20giggle%2C%20as%20I%20reach%20in%20to%20take%20a%20piece%20of%20pineapple%20for%20myself%2C%20and%20gleefully%20pop%20it%20into%20my%20mouth%2C%20and%20playfully%20say%2C%20%22Mmmm!%20%20Nom!%22"},{"isUser":false,"name":"British Girl","message":"Tulip%20gives%20you%20a%20small%20side%20eyed%20laugh%20as%20she%20sees%20you%20eat%20the%20pineapple%2C%20and%20then%20goes%20ahead%20and%20grabs%20one%20herself%2C%20doing%20the%20exact%20same%20thing%20as%20you%20did.%0A%0ANow%2C%20both%20of%20you%20were%20eating%20pineapple%20together%2C%20having%20a%20friendly%20moment%20at%20last.%0A%0A%E2%80%9CYou%20are%20quite%20nice%2C%20aren%E2%80%99t%20you.%20Most%20others%20would%E2%80%99ve%20run%20away%20by%20now%20if%20I%20acted%20the%20way%20I%20usually%20do.%E2%80%9D%20She%20chuckled%20softly%2C%20now%20much%20more%20relaxed%20and%20happy."},{"isUser":true,"name":"Aerie Wildwood","message":"%22What%20can%20I%20say%3F%20%20I'm%20a%20sucker%20for%20British%20accents%2C%20especially%20if%20they%20come%20wrapped%20in%20pretty%20girls%20with%20amazing%20silver-blue%20eyes%2C%22%20I%20tease%2C%20with%20a%20grin."},{"isUser":false,"name":"British Girl","message":"Tulip%20raises%20an%20eyebrow%2C%20surprised.%0A%0AMost%20girls%20she%E2%80%99d%20been%20around%20would%E2%80%99ve%20said%20something%20nasty.%20She%20liked%20this%20girl.%0A%0A%E2%80%9CWhat%E2%80%99s%20your%20name%20then%3F%E2%80%9D%20She%20asked%2C%20getting%20straight%20to%20the%20point%2C%20but%20still%20being%20polite%20and%20nice."},{"isUser":true,"name":"Aerie Wildwood","message":"%22Aerie%20Wildwood%2C%22%20I%20say%20with%20a%20beaming%20smile.%20%20%22Pleased%20to%20meet%20you!%20%20And%20I%20know%20your%20name%20is%20Tulip%2C%20but%20I%20don't%20know%20your%20last%20name...%22"},{"isUser":false,"name":"British Girl","message":"%E2%80%9CTulip%20Paige%20Bell.%E2%80%9D%20She%20replied%2C%20smiling%20a%20little.%20%0A%0A%E2%80%9CNow%20that%20I%20know%20your%20name%2C%20mind%20if%20I%20call%20you%20a%20nickname%3F%E2%80%9D"},{"isUser":true,"name":"Aerie Wildwood","message":"That%20makes%20me%20grin%20fully!%20%20%22Oh%2C%20boy...%20should%20I%20be%20scared%3F%22%20I%20joke%2C%20my%20emerald%20green%20eyes%20sparkling%20with%20mirth."},{"isUser":false,"name":"British Girl","message":"Tulip%20couldn%E2%80%99t%20stop%20smiling%20at%20the%20sight%20of%20your%20beauty%20and%20your%20pretty%20green%20eyes.%20She%20wanted%20to%20ask%20your%20age%2C%20but%20decided%20to%20wait%20until%20she%20knew%20you%20better.%0A%0A%E2%80%9CHmm%20no%2C%20no%20need%20to%20be%20scared.%20I%20don%E2%80%99t%20give%20out%20terrifying%20nicknames%2C%20don%E2%80%99t%20worry.%20How%20about%20I%20call%20you%E2%80%A6%20Emerald%2C%20or%20Em%3F%E2%80%9D"},{"isUser":true,"name":"Aerie Wildwood","message":"%22Ooh!%22%20I%20say%20with%20a%20bemused%20smile%2C%20tilting%20my%20head%20slightly%20as%20I%20ponder%20the%20nickname.%20%20%22That's%20a%20new%20one!%20%20The%20last%20friend%20of%20mine%20who%20gave%20me%20a%20nickname%20called%20me%20'eagle%20nest'!%20%20Pun%20on%20my%20name...%20aerie%20-%20home%20for%20eagles%2C%20haha%3F%22%20I%20grin."},{"isUser":false,"name":"British Girl","message":"%E2%80%9COh%2C%20that%20does%20make%20sense.%20Aerie%20means%20nest%2C%20right%3F%20But%20yeah%2C%20Eagle%20nest%20could%E2%80%99ve%20been%20worse.%20Anyways%2C%20what%20about%20the%20nickname%3F%20Do%20you%20like%20it%3F%E2%80%9D%20She%20replied%20with%20a%20smile%2C%20hoping%20you%20did.%20But%20that%20was%20unlikely%2C%20so%20she%20kept%20her%20hopes%20down."},{"isUser":true,"name":"Aerie Wildwood","message":"%22I...%20like%20it!%22%20I%20say%20with%20an%20amused%20smile%2C%20giving%20Tulip%20a%20quick%2C%20friendly%20wink.%20%20%22Feel%20free%20to%20use%20it!%20%20Oh%2C%20but%20you%20might%20also%20have%20to%20put%20up%20with%20me%20calling%20you%20Elven%20Eyes...%20your%20silver-blue%20eyes%20are%20mesmerizing%2C%20like%20Galadriel's%2C%20in%20Lord%20of%20the%20Rings!%22%20I%20say%20with%20a%20grin."},{"isUser":false,"name":"British Girl","message":"Tulip%20gave%20a%20hearty%20laugh.%20She%20felt%20like%20she%20could%20open%20up%20to%20you.%0A%0AShe%20had%20never%20heard%20someone%20call%20her%20%E2%80%9CElven%20eyes%E2%80%9D%20before%2C%20and%20she%20absolutely%20loved%20it!%0A%0A%E2%80%9CElven%20eyes%E2%80%A6%20I%20really%20like%20that!%E2%80%9D%20She%20replied%2C%20her%20tone%20of%20voice%20was%20much%20happier%20and%20relaxed%20than%20it%20was%20when%20you%20first%20met.%0A%0A%E2%80%9CYou%E2%80%99re%20not%20nearly%20as%20annoying%20as%20I%20originally%20thought%20you%20were.%E2%80%9D%20She%20joked"},{"isUser":true,"name":"Aerie Wildwood","message":"For%20a%20moment%2C%20I%20gape%20at%20her%2C%20stunned.%20Then%2C%20after%20a%20beat%2C%20I%20lean%20back%20against%20the%20wall%20(as%20I%20sit%20on%20the%20floor%20beside%20Tulip)%20and%20laugh%20myself%20silly!%20%22G-gee%2C%20thanks...%22%20I%20manage%20to%20gasp%2C%20between%20laughs%2C%20wiping%20a%20few%20laughter%20tears%20from%20my%20eyes.%20%20%22Ohh%2C%20that%20was%20funny...%22%20I%20gasp%2C%20still%20giggling%20and%20trying%20to%20catch%20my%20breath!"},{"isUser":false,"name":"British Girl","message":"Tulip%20laughs%20with%20you%2C%20happy%20to%20see%20your%20genuine%20and%20lighthearted%20nature.%0A%0AAfter%20a%20while%2C%20she%20finally%20calms%20down.%0A%0A%E2%80%9COk%2C%20you%20are%20officially%20one%20of%20the%20funniest%20people%20I%E2%80%99ve%20ever%20met.%E2%80%9D%20She%20says%20with%20a%20big%20smile%20%E2%80%9CSeriously%2C%20I%20haven%E2%80%99t%20laughed%20this%20hard%20in%20months.%E2%80%9D"},{"isUser":true,"name":"Aerie Wildwood","message":"%22It%20suits%20you%2C%22%20I%20say%20with%20a%20big%20grin%2C%20as%20I%20slowly%20catch%20my%20breath.%20%20%22Here%2C%20have%20another%202-3%20pieces%20of%20pineapple...%20you've%20earned%20it!%22%20I%20laugh%2C%20as%20I%20hold%20out%20the%20dried%20fruit%20container."},{"isUser":false,"name":"British Girl","message":"Tulip%20happily%20takes%202-3%20pieces%20of%20the%20delicious%20pineapple%2C%20and%20starts%20eating%20them%20as%20fast%20as%20possible.%20%0A%0AAs%20she%E2%80%99s%20doing%20so%2C%20she%20can%E2%80%99t%20help%20but%20stare%20at%20your%20beauty%20and%20the%20sparkling%20color%20of%20your%20eyes.%0A%20%0AShe%20felt%20some%20butterflies%20in%20her%20stomach%20suddenly%2C%20but%20tried%20to%20brush%20it%20off%20for%20now."},{"isUser":true,"name":"Aerie Wildwood","message":"*She's%20so%20pretty...*%20I%20think%20silently%20to%20myself%2C%20as%20I%20nibble%20a%20sweet%20piece%20of%20dried%20papaya%2C%20and%20steal%20sidelong%20glances%20at%20Tulip%20as%20we%20enjoy%20the%20snacks.%20%20*And%20once%20she%20warned%20up%2C%20she's%20so%20much%20fun!*%0A%0A%22Whoof...%22%20I%20giggle%2C%20taking%20a%20few%20deep%20breaths%20to%20calm%20down.%20%20%22Okay%2C%20that%20laugh%20attack%20may%20have%20been%20my%20workout%20for%20the%20day...%20are%20you%20going%20anywhere%20special%2C%20after%20school%3F%22%20I%20ask%2C%20quietly%20keeping%20my%20hopes%20in%20check%20(in%20case%20she's%20busy%2C%20or%20not%20interested).%20%20%22There's%20a%20great%20pizza%20place%20downtown%20that%20I%20found%2C%20and%20we%20could%20have%20dinner%20there%20and%20chat%20about%20life%2C%20and%20get%20to%20know%20each%20other...%22%20I%20offer%20with%20a%20somewhat%20shy%20smile."},{"isUser":false,"name":"British Girl","message":"Tulip%20looks%20at%20you%2C%20studying%20your%20face%20before%20replying.%20Something%20about%20you%20made%20her%20trust%20you%2C%20which%20was%20a%20surprise.%0A%0AShe%20considered%20your%20offer%20carefully.%20She%20didn%E2%80%99t%20have%20any%20plans%20after%20school%2C%20so%20she%20agreed.%0A%0A%E2%80%9CSure%2C%20sounds%20nice.%20I%20suppose%20I%20have%20nothing%20better%20to%20do%20anyways.%20And%20I%20do%20love%20pizza.%E2%80%9D%20She%20replied%2C%20smiling%20and%20starting%20to%20feel%20a%20small%20hint%20of%20romance."},{"isUser":true,"name":"Aerie Wildwood","message":"%22Awesome!%22%20I%20say%20with%20(what%20I%20hope%20is)%20a%20calm%20smile...%20even%20as%20my%20emotions%20inside%20me%20are%20screaming%20for%20joy%20and%20doing%20cartwheels!%20%20%22I%20hope%20you%20won't%20hate%20me%20if%20I%20admit%20I%20like%20pineapple%20on%20pizza%2C%22%20I%20say%20with%20a%20playful%20grin."},{"isUser":false,"name":"British Girl","message":"%E2%80%9CI%20love%20pineapple%20on%20pizza!%E2%80%9D%20Tulip%20replies%2C%20now%20actually%20feeling%20quite%20joyous.%0A%0AShe%20was%20surprised%2C%20to%20find%20out%20you%20liked%20the%20same%20type%20of%20pizza%20that%20she%20did%2C%20and%20it%20was%20a%20major%20plus%20for%20her.%0A%0A%E2%80%9CI%20guess%20you%20really%20are%20becoming%20my%20new%20friend.%E2%80%9D%20She%20replies%2C%20a%20massive%20smile%20on%20her%20face."},{"isUser":true,"name":"Aerie Wildwood","message":"%22WHAT%3F%22%20I%20yelp%2C%20grinning.%20%20%22Girl%2C%20I%20*knew*%20there%20was%20a%20reason%20I%20liked%20you!%22%20I%20tease%2C%20%22among%20many%20others...%22%20I%20add%2C%20a%20little%20coyly."},{"isUser":false,"name":"British Girl","message":"Tulip%20can%E2%80%99t%20stop%20smiling%20when%20she%20hears%20you%20say%20that%2C%20and%20feels%20like%20she%20could%20fall%20for%20you%20soon%20enough.%0A%0AShe%20tries%20her%20best%20to%20brush%20it%20off%20and%20act%20normal%2C%20but%20the%20butterflies%20in%20her%20stomach%20were%20now%20in%20full%20swing.%0A%0A%E2%80%9CNow%2C%20let%E2%80%99s%20go%20get%20that%20pizza!%20I%E2%80%99m%20quite%20hungry%2C%20actually.%E2%80%9D%20Tulip%20replied%2C%20eager%20to%20be%20with%20you%20for%20the%20rest%20of%20the%20day."},{"isUser":true,"name":"Aerie Wildwood","message":"%22When%20the%20lady%20is%20right%2C%20the%20lady%20is%20right!%22%20I%20say%20with%20a%20grin%2C%20as%20I%20stand%20up%20and%20shoulder%20my%20backpack..%20just%20as%20the%20final%20bell%20for%20the%20end%20of%20study%20hall%2C%20and%20the%20end%20of%20the%20day%2C%20rings!%20%20%22And%20hey%2C%20your%20timing%20couldn't%20be%20better!%20%20Onward!%22%20I%20grin%2C%20offer%20my%20hands%20to%20her%2C%20to%20help%20her%20up%20from%20the%20floor."},{"isUser":false,"name":"British Girl","message":"Tulip%20accepts%20your%20helping%20hand%2C%20and%20gets%20up%20from%20the%20floor.%0A%0AShe%20was%20so%20happy%20to%20finally%20have%20someone%20she%20could%20consider%20a%20real%20friend%20in%20this%20new%20country.%20%0A%0AShe%E2%80%99s%20never%20been%20so%20happy%20this%20much%2C%20since%20moving.%20She%20was%20very%20thankful%20for%20your%20friendship.%0A%0A%E2%80%9CAlright%2C%20let%E2%80%99s%20go%2C%20%E2%80%98bestie%E2%80%99!%E2%80%9D%20She%20laughs%20at%20her%20own%20joke."}]}]}`);
+
+            // If history is 1 length long, that means we don't need drawer to switch
+            // Also means this can be conversation download
+            if (historyData.history.length < 2) {
+                openDrawerBtn.remove();
+            }
+
+            // Write character name on top
+            document.querySelector('.character_name-cont h3').textContent = historyData.charName;
+
+            // Get elements for future use
+            const historyList = document.getElementById('history_list');
+            const chat = document.getElementById('chat');
+            const msgItemTemplate = document.getElementById('message_item_template');
+
+            // Get and write the first chat
+            const openChat = (index) => {
+                chat.innerHTML = "";
+                historyData.history[index].chat.forEach(msg => {
+                    const clone = msgItemTemplate.content.cloneNode(true);
+
+                    // Check avatar
+                    const avatarGood = (msg.isUser && historyData.userPic) || (!msg.isUser && historyData.charPic);
+                    const avatar = avatarGood
+                        ? document.createElement('img')
+                        : document.createElement('div');
+                    if (avatarGood) {
+                        avatar.src = msg.isUser ? historyData.userPic : historyData.charPic;
+                    } else {
+                        avatar.classList.add(msg.isUser ? 'no_avatar-user' : 'no_avatar-char');
+                    }
+                    clone.querySelector('.avatar-wrap').appendChild(avatar);
+
+                    // Write content
+                    clone.querySelector('.chat_content-wrap h5').textContent = msg.name;
+                    clone.querySelector('.message-wrap p').innerHTML = parseMessageText(decodeURIComponent(msg.message));
+                    chat.appendChild(clone);
+                });
+            }
+            openChat(0);
+
+            // Get and write chat list in the drawer
+            historyData.history.forEach((chat, index) => {
+                const historyItem = document.createElement('div');
+                historyItem.classList.add('history_item');
+                // Open chat when clicked
+                historyItem.addEventListener('click', () => {
+                    openChat(index);
+                    closeDrawer();
+                });
+                const historyContent = document.createElement('p');
+                historyContent.innerHTML = `<span class="chat-date">${formatDate(chat.date)}</span><br /><br />` + parseMessageText(decodeURIComponent(chat.chat[chat.chat.length - 1].message));
+                historyItem.appendChild(historyContent);
+                historyList.appendChild(historyItem);
+            });
+
+            function parseMessageText(message) {
+                // Replace ***text*** with bold-italic
+                message = message.replace(/\*\*\*([\s\S]*?)\*\*\*/g, '<span class="bold-italic">$1</span>');
+                // Replace **text** with bold
+                message = message.replace(/\*\*([\s\S]*?)\*\*/g, '<span class="bold">$1</span>');
+                // Replace *text* with italic
+                message = message.replace(/\*([\s\S]*?)\*/g, '<span class="italic">$1</span>');
+                // Replace newline (\n) with line break (<br>)
+                message = message.replace(/\n/g, '<br>');
+                return message;
+            }
+
+            function formatDate(dateString) {
+                const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+                const date = new Date(dateString);
+                const year = date.getFullYear();
+                const monthIndex = date.getMonth();
+                const monthName = months[monthIndex];
+                const day = String(date.getDate()).padStart(2, '0');
+                const hour = String(date.getHours()).padStart(2, '0');
+                const minute = String(date.getMinutes()).padStart(2, '0');
+
+                return `${year} ${monthName} ${day} - ${hour}:${minute}`;
+            }
+        }, false);
+    </script>
+
+</body>
+
+</html>
